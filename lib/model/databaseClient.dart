@@ -36,6 +36,26 @@ class DatabaseClient {
     return item;
   }
 
+  Future<int> edit(Item item) async {
+    Database myDatabase = await database;
+    return myDatabase.update('item', item.toMap(), where: 'id = ?', whereArgs: [item.id]);
+  }
+
+  Future<Item> upsertItem(Item item) async {
+    Database myDatabase = await database;
+    if (item.id == null) {
+      item.id = await myDatabase.insert('item', item.toMap());
+    } else {
+      myDatabase.update('item', item.toMap(), where: 'id = ?', whereArgs: [item.id]);
+    }
+    return item;
+  }
+
+  Future<int> delete(int id, String table) async {
+    Database myDatabase = await database;
+    return await myDatabase.delete(table, where: 'id = ?', whereArgs: [id]);
+  }
+
   Future<List<Item>> allItems() async {
     Database myDatabase = await database;
     List<Map<String, dynamic>> results = await myDatabase.rawQuery('SELECT * FROM item');

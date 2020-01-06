@@ -32,7 +32,7 @@ class _HomeControllerState extends State<HomeController> {
         title: Text(widget.title),
         actions: <Widget>[
           FlatButton(
-              onPressed: add,
+              onPressed: (() => add(null)),
               child: Text(
                 'Ajouter',
                 style: TextStyle(color: Colors.white),
@@ -42,16 +42,29 @@ class _HomeControllerState extends State<HomeController> {
       ),
       body: (items == null || items.length == 0) ?
       EmptyData() : ListView.builder(
-          itemBuilder: (context, i) {
-            Item item = items[i];
-            return ListTile(
-              title: Text(item.name),
-            );
-          })
+        itemCount: items.length,
+        itemBuilder: (context, i) {
+          Item item = items[i];
+          return ListTile(
+            title: Text(item.name),
+            trailing: IconButton(
+              icon: Icon(Icons.delete),
+              onPressed: () {
+                DatabaseClient().delete(item.id, 'item').then((int) {
+                  get();
+                });
+              },
+            ),
+            leading: IconButton(
+              icon: Icon(Icons.edit),
+              onPressed: (() => add(item)),
+            ),
+          );
+        })
     );
   }
 
-  Future add() async {
+  Future add(Item item) async {
     await showDialog(
         context: context,
         barrierDismissible: false,
@@ -61,7 +74,7 @@ class _HomeControllerState extends State<HomeController> {
             content: TextField(
               decoration: InputDecoration(
                   labelText: 'Liste :',
-                  hintText: 'Ex : mes prochains jeux de société'
+                  hintText: (item == null) ? 'Ex : mes prochains jeux de société' : item.name,
               ),
               onChanged: (String str) {
                 newList = str;
@@ -76,10 +89,15 @@ class _HomeControllerState extends State<HomeController> {
               FlatButton(
                 onPressed:  (() {
                   if (newList != null) {
-                    Map<String, dynamic> map = { 'name': newList};
-                    Item item = Item();
-                    item.fromMap(map);
-                    DatabaseClient().addItem(item).then((i) => get());
+                    if (item == null) {
+                      Map<String, dynamic> map = { 'name': newList };
+                      item = Item();
+                      item.fromMap(map);
+                    } else {
+                      item.name = newList;
+                    }
+                    DatabaseClient().upsertItem(item).then((i) => get());
+                    newList = null;
                     Navigator.pop(buildContext);
                   }
                 }),
