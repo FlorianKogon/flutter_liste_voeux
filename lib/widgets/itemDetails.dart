@@ -49,14 +49,17 @@ class _ItemDetailsState extends State<ItemDetails> {
         ],
       ),
       body: (articles == null || articles.length == 0) ?
-          EmptyData() : GridView.builder(itemCount: articles.length, gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2), itemBuilder: (context, i) {
+          EmptyData() : GridView.builder(itemCount: articles.length, gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 1), itemBuilder: (context, i) {
             Article article = articles[i];
             return Card(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
                   Text(article.name),
-                  (article.image == null) ? Image.asset('images/no_image.jpg') : Image.file(File(article.image)),
+                  Container(
+                    height: MediaQuery.of(context).size.height / 3,
+                      child: (article.image == null) ? Image.asset('images/no_image.jpg') : Image.file(File(article.image)),
+                  ),
                   Text((article.price == null) ? 'Aucun prix renseigné': "Prix : ${article.price}"),
                   Text((article.store == null) ? 'Aucun magasin renseigné': "Magasin : ${article.store}"),
                 ],
