@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_liste_voeux/model/item.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
+import 'article.dart';
 
 class DatabaseClient {
 
@@ -28,6 +29,10 @@ class DatabaseClient {
     await db.execute('''
     CREATE TABLE item (id INTEGER PRIMARY KEY, name TEXT NOT NULL)
     ''');
+    await db.execute('''
+    CREATE TABLE article
+    (id INTEGER PRIMARY KEY, name TEXT NOT NULL, item INTEGER, price TEXT, store TEXT, image TEXT)
+    ''');
   }
 
   Future<Item> addItem(Item item) async {
@@ -51,8 +56,15 @@ class DatabaseClient {
     return item;
   }
 
+  Future<Article> upsertArticle(Article article) async {
+    Database myDatabase = await database;
+    (article.id == null) ? article.id = await myDatabase.insert('article', article.toMap())
+        : await myDatabase.update('article', article.toMap(), where: 'id = ?', whereArgs: [article.id]);
+  }
+
   Future<int> delete(int id, String table) async {
     Database myDatabase = await database;
+    await myDatabase.delete('article', where: 'item = ?', whereArgs: [id]);
     return await myDatabase.delete(table, where: 'id = ?', whereArgs: [id]);
   }
 
@@ -66,6 +78,18 @@ class DatabaseClient {
       items.add(item);
     });
     return items;
+  }
+
+  Future<List<Article>> allArticles(int item) async {
+    Database myDatabase = await database;
+    List<Map<String, dynamic>> results = await myDatabase.query('article', where: 'item = ?', whereArgs: [item]);
+    List<Article> articles = [];
+    results.forEach((map) {
+      Article article = Article();
+      article.fromMap(map);
+      articles.add(article);
+    });
+    return articles;
   }
 
 }

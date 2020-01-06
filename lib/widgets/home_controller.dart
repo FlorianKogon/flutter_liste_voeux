@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_liste_voeux/model/item.dart';
 import 'package:flutter_liste_voeux/widgets/empty_data.dart';
 import 'package:flutter_liste_voeux/model/databaseClient.dart';
+import 'package:flutter_liste_voeux/widgets/itemDetails.dart';
 
 class HomeController extends StatefulWidget {
   HomeController({Key key, this.title}) : super(key: key);
@@ -59,6 +60,11 @@ class _HomeControllerState extends State<HomeController> {
               icon: Icon(Icons.edit),
               onPressed: (() => add(item)),
             ),
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (BuildContext buildContext) {
+                return ItemDetails(item);
+              }));
+            },
           );
         })
     );
